@@ -5,7 +5,7 @@
 
 # Define common variables
 export COMMON_RESOURCE_GROUP=nnmlstudio-common-RG
-export LOCATION=eastus
+export LOCATION=germanywestcentral
 export LINUX_VM=aistudio-linux-vm
 export LINUX_IMAGE=Ubuntu2204
 export WINDOWS_VM=aistudio-win-vm
@@ -16,10 +16,10 @@ export ADMIN_PASSWORD=Azure12345678
 export VNET_NAME=customer-vnet
 export PEP_SUBNET_NAME=private-endpoint-subnet
 export VM_SUBNET_NAME=vm-subnet
-export VNET_ADDRESS_PREFIX=10.100.0.0/16
-export PEP_SUBNET_PREFIX=10.100.3.0/24
-export VM_SUBNET_PREFIX=10.100.2.0/24
-export GW_SUBNET_PREFIX=10.100.1.0/24
+export VNET_ADDRESS_PREFIX=10.10.0.0/16
+export PEP_SUBNET_PREFIX=10.10.3.0/24
+export VM_SUBNET_PREFIX=10.10.2.0/24
+export GW_SUBNET_PREFIX=10.10.1.0/24
 export NSG_NAME=vm-nsg
 
 
