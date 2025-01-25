@@ -36,7 +36,7 @@ az group list --query "[?contains(name, 'studio')]" --output table
 
 
 # Create resource group
-az group create --name $COMMON_RESOURCE_GROUP --location $LOCATION
+az group create --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION
 
 
 # Create virtual network with two subnets in one line
@@ -71,7 +71,7 @@ EOF
     --name $LINUX_VM \
     --image $LINUX_IMAGE \
     --admin-username $ADMIN_USERNAME \
-    --ssh-key-values $PUB_KEY \
+    --generate-ssh-keys \
     --public-ip-sku Standard \
     --vnet-name $VNET_NAME \
     --subnet $VM_SUBNET_NAME \
@@ -111,48 +111,48 @@ echo "Windows Public IP: $WINDOWS_VM_IP"
 echo "RDP into VM: mstsc /v:$WINDOWS_VM_IP"
 
 
-# # Create a private endpoint (don't need this for public access)
-# # create azure storage account with single line with public access disabled
-# # az storage account create --name nnmlstudiostorage99 --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION --sku Standard_LRS --allow-blob-public-access false
+# Create a private endpoint (don't need this for public access)
+# create azure storage account with single line with public access disabled
+# az storage account create --name nnmlstudiostorage99 --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION --sku Standard_LRS --allow-blob-public-access false
 
-# az storage account create --name nnmlstudiostorage99 --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION --sku Standard_LRS --public-network-access disabled
+az storage account create --name nnmlstudiostorage99 --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION --sku Standard_LRS --public-network-access disabled
 
-# #find the storage account id
-# storage_account_id=$(az storage account show --name nnmlstudiostorage99 --resource-group $COMMON_RESOURCE_GROUP --query id --output tsv)
-# # create private endpoint for storage account and corresponding DNS zone
-# az network private-endpoint create --name nnmlstudiostorage99-blob-pe --resource-group $COMMON_RESOURCE_GROUP --vnet-name $VNET_NAME --subnet $PEP_SUBNET_NAME --private-connection-resource-id $storage_account_id --group-id blob --connection-name nnmlstudio --location $LOCATION
-# az network private-endpoint create --name nnmlstudiostorage99-file-pe --resource-group $COMMON_RESOURCE_GROUP --vnet-name $VNET_NAME --subnet $PEP_SUBNET_NAME --private-connection-resource-id $storage_account_id --group-id file --connection-name nnmlstudio --location $LOCATION
-# az network private-dns zone create --resource-group $COMMON_RESOURCE_GROUP --name privatelink.blob.core.windows.net
-# az network private-dns zone create --resource-group $COMMON_RESOURCE_GROUP --name privatelink.file.core.windows.net
-# az network private-dns link vnet create --resource-group $COMMON_RESOURCE_GROUP --zone-name privatelink.blob.core.windows.net --name ${VNET_NAME}-link --virtual-network $VNET_NAME --registration-enabled false
-# az network private-dns link vnet create --resource-group $COMMON_RESOURCE_GROUP --zone-name privatelink.file.core.windows.net --name ${VNET_NAME}-link --virtual-network $VNET_NAME --registration-enabled false
-# # create zone group for storage account
-# az network private-endpoint dns-zone-group create --resource-group $COMMON_RESOURCE_GROUP --endpoint-name nnmlstudiostorage99-blob-pe --name myzonegroup --private-dns-zone privatelink.blob.core.windows.net --zone-name privatelink.blob.core.windows.net
-# az network private-endpoint dns-zone-group create --resource-group $COMMON_RESOURCE_GROUP --endpoint-name nnmlstudiostorage99-file-pe --name myzonegroup --private-dns-zone privatelink.file.core.windows.net --zone-name privatelink.file.core.windows.net
+#find the storage account id
+storage_account_id=$(az storage account show --name nnmlstudiostorage99 --resource-group $COMMON_RESOURCE_GROUP --query id --output tsv)
+# create private endpoint for storage account and corresponding DNS zone
+az network private-endpoint create --name nnmlstudiostorage99-blob-pe --resource-group $COMMON_RESOURCE_GROUP --vnet-name $VNET_NAME --subnet $PEP_SUBNET_NAME --private-connection-resource-id $storage_account_id --group-id blob --connection-name nnmlstudio --location $LOCATION
+az network private-endpoint create --name nnmlstudiostorage99-file-pe --resource-group $COMMON_RESOURCE_GROUP --vnet-name $VNET_NAME --subnet $PEP_SUBNET_NAME --private-connection-resource-id $storage_account_id --group-id file --connection-name nnmlstudio --location $LOCATION
+az network private-dns zone create --resource-group $COMMON_RESOURCE_GROUP --name privatelink.blob.core.windows.net
+az network private-dns zone create --resource-group $COMMON_RESOURCE_GROUP --name privatelink.file.core.windows.net
+az network private-dns link vnet create --resource-group $COMMON_RESOURCE_GROUP --zone-name privatelink.blob.core.windows.net --name ${VNET_NAME}-link --virtual-network $VNET_NAME --registration-enabled false
+az network private-dns link vnet create --resource-group $COMMON_RESOURCE_GROUP --zone-name privatelink.file.core.windows.net --name ${VNET_NAME}-link --virtual-network $VNET_NAME --registration-enabled false
+# create zone group for storage account
+az network private-endpoint dns-zone-group create --resource-group $COMMON_RESOURCE_GROUP --endpoint-name nnmlstudiostorage99-blob-pe --name myzonegroup --private-dns-zone privatelink.blob.core.windows.net --zone-name privatelink.blob.core.windows.net
+az network private-endpoint dns-zone-group create --resource-group $COMMON_RESOURCE_GROUP --endpoint-name nnmlstudiostorage99-file-pe --name myzonegroup --private-dns-zone privatelink.file.core.windows.net --zone-name privatelink.file.core.windows.net
 
-# # create azure container registry with single line with public access network disabled and soft erase enabled
+# create azure container registry with single line with public access network disabled and soft erase enabled
 
-# az acr create --name nnmlstudioacr99 --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION --sku Premium --public-network-enabled false
+az acr create --name nnmlstudioacr99 --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION --sku Premium --public-network-enabled false
 
-# # find acr id
-# acr_id=$(az acr show --name nnmlstudioacr99 --resource-group $COMMON_RESOURCE_GROUP --query id --output tsv)
-# # create private endpoint for container registry and corresponding DNS zone
-# az network private-endpoint create --name nnmlstudioacr-pe --resource-group $COMMON_RESOURCE_GROUP --vnet-name $VNET_NAME --subnet $PEP_SUBNET_NAME --private-connection-resource-id $acr_id --group-id registry --connection-name nnmlstudio --location $LOCATION
-# az network private-dns zone create --resource-group $COMMON_RESOURCE_GROUP --name privatelink.azurecr.io
-# az network private-dns link vnet create --resource-group $COMMON_RESOURCE_GROUP --zone-name privatelink.azurecr.io --name ${VNET_NAME}-link --virtual-network $VNET_NAME --registration-enabled false
-# # create zone group for acr
-# az network private-endpoint dns-zone-group create --resource-group $COMMON_RESOURCE_GROUP --endpoint-name nnmlstudio-pe --name myzonegroup --private-dns-zone privatelink.azurecr.io --zone-name privatelink.azurecr.io
+# find acr id
+acr_id=$(az acr show --name nnmlstudioacr99 --resource-group $COMMON_RESOURCE_GROUP --query id --output tsv)
+# create private endpoint for container registry and corresponding DNS zone
+az network private-endpoint create --name nnmlstudioacr-pe --resource-group $COMMON_RESOURCE_GROUP --vnet-name $VNET_NAME --subnet $PEP_SUBNET_NAME --private-connection-resource-id $acr_id --group-id registry --connection-name nnmlstudio --location $LOCATION
+az network private-dns zone create --resource-group $COMMON_RESOURCE_GROUP --name privatelink.azurecr.io
+az network private-dns link vnet create --resource-group $COMMON_RESOURCE_GROUP --zone-name privatelink.azurecr.io --name ${VNET_NAME}-link --virtual-network $VNET_NAME --registration-enabled false
+# create zone group for acr
+az network private-endpoint dns-zone-group create --resource-group $COMMON_RESOURCE_GROUP --endpoint-name nnmlstudio-pe --name myzonegroup --private-dns-zone privatelink.azurecr.io --zone-name privatelink.azurecr.io
 
-# # create azure key vault with single line with public access network disabled
-# az keyvault create --name nnmlstudiokv99 --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION --sku standard --public-network-access disabled
-# # find key vault id
-# key_vault_id=$(az keyvault show --name nnmlstudiokv99 --resource-group $COMMON_RESOURCE_GROUP --query id --output tsv)
-# # create private endpoint for key vault and corresponding DNS zone
-# az network private-endpoint create --name nnmlstudiokv-pe --resource-group $COMMON_RESOURCE_GROUP --vnet-name $VNET_NAME --subnet $PEP_SUBNET_NAME --private-connection-resource-id $key_vault_id --group-id vault --connection-name nnmlstudio --location $LOCATION
-# az network private-dns zone create --resource-group $COMMON_RESOURCE_GROUP --name privatelink.vaultcore.azure.net
-# az network private-dns link vnet create --resource-group $COMMON_RESOURCE_GROUP --zone-name privatelink.vaultcore.azure.net --name ${VNET_NAME}-link --virtual-network $VNET_NAME --registration-enabled false
-# # create zone group for key vault
-# az network private-endpoint dns-zone-group create --resource-group $COMMON_RESOURCE_GROUP --endpoint-name nnmlstudio-pe --name myzonegroup --private-dns-zone privatelink.vaultcore.azure.net --zone-name privatelink.vaultcore.azure.net
-# #create app insights
-# az monitor app-insights component create --app nnmlstudioappinsight99 --location $LOCATION --resource-group $COMMON_RESOURCE_GROUP
+# create azure key vault with single line with public access network disabled
+az keyvault create --name nnmlstudiokv99 --resource-group $COMMON_RESOURCE_GROUP --location $LOCATION --sku standard --public-network-access disabled
+# find key vault id
+key_vault_id=$(az keyvault show --name nnmlstudiokv99 --resource-group $COMMON_RESOURCE_GROUP --query id --output tsv)
+# create private endpoint for key vault and corresponding DNS zone
+az network private-endpoint create --name nnmlstudiokv-pe --resource-group $COMMON_RESOURCE_GROUP --vnet-name $VNET_NAME --subnet $PEP_SUBNET_NAME --private-connection-resource-id $key_vault_id --group-id vault --connection-name nnmlstudio --location $LOCATION
+az network private-dns zone create --resource-group $COMMON_RESOURCE_GROUP --name privatelink.vaultcore.azure.net
+az network private-dns link vnet create --resource-group $COMMON_RESOURCE_GROUP --zone-name privatelink.vaultcore.azure.net --name ${VNET_NAME}-link --virtual-network $VNET_NAME --registration-enabled false
+# create zone group for key vault
+az network private-endpoint dns-zone-group create --resource-group $COMMON_RESOURCE_GROUP --endpoint-name nnmlstudio-pe --name myzonegroup --private-dns-zone privatelink.vaultcore.azure.net --zone-name privatelink.vaultcore.azure.net
+#create app insights
+az monitor app-insights component create --app nnmlstudioappinsight99 --location $LOCATION --resource-group $COMMON_RESOURCE_GROUP
 

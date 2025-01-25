@@ -26,7 +26,7 @@ az group list --query "[?contains(name, 'studio')]" --output table
 PREFIX="mlstudio-byo-demo"
 
 # Export variables with the prefix
-export LOCATION="eastus"
+export LOCATION="germanywestcentral"
 export RESOURCE_GROUP="${PREFIX}-RG"
 export WORKSPACE_NAME="${PREFIX}"
 echo $RESOURCE_GROUP
